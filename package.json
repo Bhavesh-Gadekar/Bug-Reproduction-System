@@ -1,0 +1,26 @@
+{
+  "name": "bug-reproduction-agent-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bug Reproduction Agent Monorepo (FastAPI, Next.js, LangGraph Worker)",
+  "scripts": {
+    "dev:web": "npm --workspace=web run dev",
+    "build:web": "npm --workspace=web run build",
+    "lint:web": "npm --workspace=web run lint",
+    "lint:py": "ruff check .",
+    "format:py": "ruff format .",
+    "lint": "npm run lint:web && npm run lint:py",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "bug-reproduction",
+    "ai-agent",
+    "fastapi",
+    "nextjs",
+    "langgraph"
+  ],
+  "author": "",
+  "license": "ISC"
+}

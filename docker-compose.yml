@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Local Redis for message brokering and agent task queues
+  redis:
+    image: redis:7-alpine
+    container_name: bug_reproduction_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - bug_repro_network
+
+  # FastAPI Backend Service
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: bug_reproduction_api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - B2_KEY_ID=${B2_KEY_ID}
+      - B2_APPLICATION_KEY=${B2_APPLICATION_KEY}
+      - B2_BUCKET_NAME=${B2_BUCKET_NAME}
+      - B2_ENDPOINT=${B2_ENDPOINT}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./api:/app
+    networks:
+      - bug_repro_network
+
+  # Background Worker (LangGraph Agent Runner)
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: bug_reproduction_worker
+    restart: unless-stopped
+    environment:
+      - NEON_DATABASE_URL=${NEON_DATABASE_URL}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - B2_KEY_ID=${B2_KEY_ID}
+      - B2_APPLICATION_KEY=${B2_APPLICATION_KEY}
+      - B2_BUCKET_NAME=${B2_BUCKET_NAME}
+      - B2_ENDPOINT=${B2_ENDPOINT}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./worker:/app
+    networks:
+      - bug_repro_network
+
+  # Next.js Web Frontend
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: bug_reproduction_web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    depends_on:
+      - api
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - bug_repro_network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  bug_repro_network:
+    driver: bridge
