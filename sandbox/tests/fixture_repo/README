@@ -1,0 +1,19 @@
+# fixture_repo — Deliberately Failing Test Suite
+#
+# This tiny project exists solely to give the sandbox runner's integration
+# tests a reproducible "failing pytest run" to capture.
+#
+# Structure:
+#   fixture_repo/
+#     setup.cfg          ← makes this an installable package (optional but tidy)
+#     tests/
+#       test_always_fails.py   ← one test that always fails
+#       test_always_passes.py  ← one test that always passes
+#
+# When mounted into a python:3.11-slim container and executed as:
+#   pip install pytest -q && pytest tests/ -v
+#
+# The expected outcome is:
+#   exit_code = 1  (pytest returns non-zero when at least one test fails)
+#   "FAILED" appears in stdout
+#   "test_always_fails" appears in stdout

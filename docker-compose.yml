@@ -89,6 +89,33 @@ services:
     networks:
       - bug_repro_network
 
+  # Sandbox Runner — secure Docker-out-of-Docker execution service
+  sandbox:
+    build:
+      context: ./sandbox
+      dockerfile: Dockerfile
+    container_name: bug_reproduction_sandbox
+    restart: unless-stopped
+    ports:
+      - "${SANDBOX_PORT:-8001}:8001"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEFAULT_CPU_LIMIT=${DEFAULT_CPU_LIMIT:-0.5}
+      - DEFAULT_MEMORY_LIMIT=${DEFAULT_MEMORY_LIMIT:-256m}
+      - DEFAULT_PIDS_LIMIT=${DEFAULT_PIDS_LIMIT:-64}
+      - MAX_TIMEOUT_SECONDS=${MAX_TIMEOUT_SECONDS:-120}
+      - WATCHDOG_GRACE_SECONDS=${WATCHDOG_GRACE_SECONDS:-5}
+      - SANDBOX_NETWORK=${SANDBOX_NETWORK:-none}
+      - ALLOW_IMAGE_PULL=${ALLOW_IMAGE_PULL:-true}
+    volumes:
+      # Docker-out-of-Docker: the service calls `docker run` on the host daemon.
+      # WARNING: this grants significant host access — restrict in production.
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Live-reload in development
+      - ./sandbox:/app
+    networks:
+      - bug_repro_network
+
   # Next.js Web Frontend
   web:
     build:
