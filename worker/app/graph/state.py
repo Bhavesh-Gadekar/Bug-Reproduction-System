@@ -26,6 +26,10 @@ class RepoMeta(BaseModel):
 
     git_url: str
     branch: str = "main"
+    base_commit_sha: str | None = None
+    fix_commit_sha: str | None = None
+    local_path: str | None = None      # Local clone filesystem path
+    volume_name: str | None = None     # Docker volume name or mount source
     language: str | None = None        # e.g. "python", "typescript", "java"
     framework: str | None = None       # e.g. "pytest", "jest", "junit"
     build_system: str | None = None    # e.g. "pip", "npm", "maven"

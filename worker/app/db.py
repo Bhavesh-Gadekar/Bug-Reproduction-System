@@ -62,6 +62,16 @@ run_steps_table = sa.Table(
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
 )
 
+artifacts_table = sa.Table(
+    "artifacts",
+    metadata,
+    sa.Column("id", PG_UUID(as_uuid=True), primary_key=True),
+    sa.Column("run_id", PG_UUID(as_uuid=True), nullable=False),
+    sa.Column("type", sa.String(50), nullable=False),
+    sa.Column("storage_path", sa.Text, nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+)
+
 
 def _safe_uuid(val: str | uuid.UUID | None) -> uuid.UUID:
     """Convert string to UUID, generating a deterministic UUID5 if not standard format."""
@@ -73,6 +83,47 @@ def _safe_uuid(val: str | uuid.UUID | None) -> uuid.UUID:
         return uuid.UUID(val)
     except ValueError:
         return uuid.uuid5(uuid.NAMESPACE_DNS, str(val))
+
+
+def record_artifact(
+    run_id: str | uuid.UUID,
+    artifact_type: str,
+    storage_path: str,
+) -> uuid.UUID | None:
+    """
+    Insert a record into the artifacts table in Neon DB.
+    """
+    settings = get_worker_settings()
+    if not settings.NEON_DATABASE_URL:
+        return None
+
+    run_uuid = _safe_uuid(run_id)
+    artifact_id = uuid.uuid4()
+
+    try:
+        engine = sa.create_engine(settings.neon_sa_url, pool_pre_ping=True)
+        with engine.begin() as conn:
+            stmt = sa.text(
+                """
+                INSERT INTO artifacts (id, run_id, type, storage_path, created_at)
+                VALUES (:id, :run_id, CAST(:type AS artifact_type), :storage_path, :created_at)
+                """
+            )
+            conn.execute(
+                stmt,
+                {
+                    "id": artifact_id,
+                    "run_id": run_uuid,
+                    "type": artifact_type,
+                    "storage_path": storage_path,
+                    "created_at": datetime.now(tz=timezone.utc),
+                },
+            )
+            logger.info("Recorded artifact type=%s path=%s for run_id=%s", artifact_type, storage_path, run_id)
+            return artifact_id
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Could not record artifact for run_id=%s: %s", run_id, exc)
+        return None
 
 
 def ensure_reproduction_run(

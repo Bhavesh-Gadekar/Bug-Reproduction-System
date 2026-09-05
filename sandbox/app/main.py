@@ -59,6 +59,14 @@ class RunRequest(BaseModel):
         default_factory=dict,
         description="Additional environment variables to inject into the container",
     )
+    mounts: list[str] = Field(
+        default_factory=list,
+        description="Volumes or host directories to mount into the container (scoped :ro by default)",
+    )
+    workdir: str | None = Field(
+        default=None,
+        description="Working directory inside the container",
+    )
 
     @field_validator("base_image")
     @classmethod
@@ -162,6 +170,8 @@ async def run_command(
         command=body.command,
         timeout_seconds=body.timeout_seconds,
         env=body.env,
+        mounts=body.mounts,
+        workdir=body.workdir,
     )
 
     loop = asyncio.get_event_loop()

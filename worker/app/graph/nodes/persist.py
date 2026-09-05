@@ -51,9 +51,9 @@ async def persist_node(state: BugReportState) -> dict[str, Any]:
         )
 
     # ------------------------------------------------------------------
-    # B2 artifact upload (stubbed)
+    # B2 artifact upload
     # ------------------------------------------------------------------
-    _stub_b2_upload(state)
+    _upload_b2_artifacts(state, settings)
 
     logger.info(
         "Run complete: bug_report_id=%s reproduced=%s verdict=%s attempts=%d",
@@ -125,19 +125,74 @@ async def _write_to_neon(
     logger.info("Persisted run to Neon for bug_report_id=%s run_id=%s", state.bug_report_id, state.run_id)
 
 
-def _stub_b2_upload(state: BugReportState) -> None:
-    """Log what *would* be uploaded to B2 (real upload wired in next step)."""
-    artifacts = []
-    if state.current_script:
-        artifacts.append(f"repro_script/{state.bug_report_id}.py")
-    if state.minimized_script:
-        artifacts.append(f"minimized_script/{state.bug_report_id}_min.py")
-    for i, record in enumerate(state.execution_history):
-        artifacts.append(f"logs/{state.bug_report_id}/attempt_{i}_stdout.txt")
+def _upload_b2_artifacts(state: BugReportState, settings: Any) -> None:
+    """Upload reproduction artifacts (scripts and logs) to Backblaze B2 and record in DB."""
+    if not (settings.B2_KEY_ID and settings.B2_APPLICATION_KEY):
+        logger.warning("B2 credentials not configured — skipping live B2 upload for bug_report_id=%s", state.bug_report_id)
+        return
 
-    logger.info(
-        "[B2 STUB] Would upload %d artifact(s) for bug_report_id=%s: %s",
-        len(artifacts),
-        state.bug_report_id,
-        artifacts,
-    )
+    import boto3
+    from botocore.config import Config
+    from app.db import record_artifact
+
+    try:
+        s3 = boto3.client(
+            "s3",
+            endpoint_url=settings.B2_ENDPOINT,
+            aws_access_key_id=settings.B2_KEY_ID,
+            aws_secret_access_key=settings.B2_APPLICATION_KEY,
+            config=Config(signature_version="s3v4"),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to initialize boto3 S3 client: %s", exc)
+        return
+
+    bucket = settings.B2_BUCKET_NAME
+    run_id = state.run_id or state.bug_report_id
+
+    # 1. Repro script artifact
+    if state.current_script:
+        key = f"artifacts/{state.bug_report_id}/repro_script.py"
+        try:
+            s3.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=state.current_script.encode("utf-8"),
+                ContentType="text/x-python",
+            )
+            record_artifact(run_id=run_id, artifact_type="repro_script", storage_path=key)
+            logger.info("Uploaded reproduction script to B2: s3://%s/%s", bucket, key)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to upload repro script to B2 (%s): %s", key, exc)
+
+    # 2. Minimized script artifact (if minimized)
+    if state.minimized_script and state.minimized_script != state.current_script:
+        key = f"artifacts/{state.bug_report_id}/minimized_script.py"
+        try:
+            s3.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=state.minimized_script.encode("utf-8"),
+                ContentType="text/x-python",
+            )
+            record_artifact(run_id=run_id, artifact_type="repro_script", storage_path=key)
+            logger.info("Uploaded minimized script to B2: s3://%s/%s", bucket, key)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to upload minimized script to B2 (%s): %s", key, exc)
+
+    # 3. Execution logs
+    for idx, record in enumerate(state.execution_history):
+        if record.stdout or record.stderr:
+            key = f"artifacts/{state.bug_report_id}/attempt_{record.hypothesis_index}_log.txt"
+            content = f"--- ATTEMPT {record.hypothesis_index} ---\nExit Code: {record.exit_code}\nVerdict: {record.verdict}\n\n--- STDOUT ---\n{record.stdout}\n\n--- STDERR ---\n{record.stderr}\n"
+            try:
+                s3.put_object(
+                    Bucket=bucket,
+                    Key=key,
+                    Body=content.encode("utf-8"),
+                    ContentType="text/plain",
+                )
+                record_artifact(run_id=run_id, artifact_type="log", storage_path=key)
+                logger.info("Uploaded execution log to B2: s3://%s/%s", bucket, key)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Failed to upload execution log to B2 (%s): %s", key, exc)

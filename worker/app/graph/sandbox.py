@@ -43,6 +43,9 @@ class SandboxClient(Protocol):
         base_image: str,
         command: list[str],
         timeout_seconds: int,
+        mounts: list[str] | None = None,
+        workdir: str | None = None,
+        env: dict[str, str] | None = None,
     ) -> SandboxResult:
         """Execute *command* inside a sandboxed container and return the result."""
         ...
@@ -70,14 +73,23 @@ class RealSandboxClient:
         base_image: str,
         command: list[str],
         timeout_seconds: int,
+        mounts: list[str] | None = None,
+        workdir: str | None = None,
+        env: dict[str, str] | None = None,
     ) -> SandboxResult:
+        payload: dict[str, Any] = {
+            "base_image": base_image,
+            "command": command,
+            "timeout_seconds": timeout_seconds,
+            "mounts": mounts or [],
+            "env": env or {},
+        }
+        if workdir:
+            payload["workdir"] = workdir
+
         response = await self._client.post(
             f"{self._base_url}/run",
-            json={
-                "base_image": base_image,
-                "command": command,
-                "timeout_seconds": timeout_seconds,
-            },
+            json=payload,
         )
         response.raise_for_status()
         data = response.json()
@@ -114,6 +126,9 @@ class FakeSandboxClient:
         base_image: str,
         command: list[str],
         timeout_seconds: int,
+        mounts: list[str] | None = None,
+        workdir: str | None = None,
+        env: dict[str, str] | None = None,
     ) -> SandboxResult:
         # Extract the script text (last element of ["python3", "-c", "<script>"])
         script = command[-1] if command else ""

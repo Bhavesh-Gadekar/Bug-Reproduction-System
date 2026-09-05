@@ -8,6 +8,7 @@ Docker daemon is needed.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from app.graph.state import ExecutionRecord
@@ -42,11 +43,32 @@ def make_sandbox_exec_node(sandbox: "SandboxClient", timeout_seconds: int = _DEF
             state.bug_report_id,
         )
 
+        # Determine sandbox mount configuration for the cloned repository
+        mounts: list[str] = []
+        workdir: str | None = None
+        env: dict[str, str] = {}
+
+        from app.core.config import get_worker_settings
+        settings = get_worker_settings()
+
+        if state.repo.volume_name == settings.REPOS_VOLUME_NAME or (state.repo.volume_name and Path("/repos").is_dir()):
+            mounts = [f"{settings.REPOS_VOLUME_NAME}:/repos:ro"]
+            repo_path = f"/repos/{state.bug_report_id}"
+            workdir = repo_path
+            env = {"PYTHONPATH": repo_path}
+        elif state.repo.local_path:
+            mounts = [f"{state.repo.local_path}:/workspace:ro"]
+            workdir = "/workspace"
+            env = {"PYTHONPATH": "/workspace"}
+
         try:
             result = await sandbox.run(
                 base_image=base_image,
                 command=["python3", "-c", script],
                 timeout_seconds=timeout_seconds,
+                mounts=mounts,
+                workdir=workdir,
+                env=env,
             )
         except Exception as exc:  # noqa: BLE001
             logger.exception("Sandbox call failed: %s", exc)

@@ -138,7 +138,7 @@ class GeminiLLMClient:
         api_key: str | None = None,
         model: str | None = None,
         timeout_seconds: float = 45.0,
-        max_retries: int = 3,
+        max_retries: int = 5,
     ):
         import logging
         from app.core.config import get_worker_settings
@@ -146,8 +146,11 @@ class GeminiLLMClient:
         self.logger = logging.getLogger(__name__)
         settings = get_worker_settings()
         self.api_key = api_key or settings.GEMINI_API_KEY
-        raw_model = model or getattr(settings, "GEMINI_MODEL", "gemini-3.6-flash")
-        self.model = "gemini-3.6-flash" if raw_model == "gemini-2.5-flash" else raw_model
+        raw_model = model or getattr(settings, "GEMINI_MODEL", "gemini-3.5-flash-lite")
+        if raw_model in ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"):
+            self.model = "gemini-3.5-flash-lite"
+        else:
+            self.model = raw_model
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
         self._client = None
@@ -225,7 +228,17 @@ class GeminiLLMClient:
                     exc,
                 )
                 if attempt < self.max_retries:
-                    backoff = (2 ** (attempt - 1)) + (0.1 * attempt)
+                    err_str = str(exc)
+                    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                        import re
+                        m = re.search(r"retry in (\d+(?:\.\d+)?)s", err_str, re.IGNORECASE)
+                        if m:
+                            backoff = max(float(m.group(1)) + 1.0, 30.0)
+                        else:
+                            backoff = 32.0
+                        self.logger.info("Gemini rate-limited — waiting %.1fs before retry...", backoff)
+                    else:
+                        backoff = min((2 ** (attempt - 1)) + 1.0, 10.0)
                     await asyncio.sleep(backoff)
 
         latency_ms = int((time.monotonic() - start_time) * 1000)

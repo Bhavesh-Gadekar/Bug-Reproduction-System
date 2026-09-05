@@ -43,7 +43,7 @@ class WorkerSettings(BaseSettings):
         description="Google Gemini API key for reproduction agent reasoning",
     )
     GEMINI_MODEL: str = Field(
-        default="gemini-3.6-flash",
+        default="gemini-3.5-flash-lite",
         description="Gemini model name for reproduction agent reasoning",
     )
 
@@ -96,6 +96,10 @@ class WorkerSettings(BaseSettings):
     SANDBOX_TIMEOUT_SECONDS: int = Field(
         default=60,
         description="Per-run timeout forwarded to the sandbox service",
+    )
+    REPOS_VOLUME_NAME: str = Field(
+        default="bug_reproduction_repos_data",
+        description="Docker named volume name for cloned repositories",
     )
 
     @property

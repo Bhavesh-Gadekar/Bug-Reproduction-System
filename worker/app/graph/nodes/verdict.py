@@ -71,7 +71,12 @@ async def verdict_node(state: BugReportState) -> dict[str, Any]:
 
     if last.timed_out or last.exit_code == -1:
         verdict = "error"
-    elif last.exit_code != 0 and any(kw in combined_output for kw in keywords):
+    elif any(kw in combined_output for kw in keywords) and (
+        last.exit_code != 0
+        or "Traceback" in combined_output
+        or "Exception ignored" in combined_output
+        or any(f"{kw}:" in combined_output for kw in keywords)
+    ):
         verdict = "matched"
     else:
         verdict = "no_match"

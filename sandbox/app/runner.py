@@ -40,6 +40,8 @@ class JobRequest:
     command: list[str]
     timeout_seconds: int
     env: dict[str, str] = field(default_factory=dict)
+    mounts: list[str] = field(default_factory=list)
+    workdir: str | None = None
 
 
 @dataclass
@@ -149,6 +151,15 @@ def run_job(request: JobRequest, settings: Settings) -> JobResult:
         f"--memory={settings.DEFAULT_MEMORY_LIMIT}",
         f"--pids-limit={settings.DEFAULT_PIDS_LIMIT}",
     ]
+
+    # Mount volumes/directories (scoped read-only by default for safety)
+    for mount in request.mounts:
+        mount_arg = mount if (":ro" in mount or ":rw" in mount) else f"{mount}:ro"
+        cmd += ["-v", mount_arg]
+
+    # Set container working directory if specified
+    if request.workdir:
+        cmd += ["-w", request.workdir]
 
     # Inject extra environment variables requested by the caller
     for key, value in request.env.items():
