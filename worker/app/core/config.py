@@ -42,6 +42,10 @@ class WorkerSettings(BaseSettings):
         default="",
         description="Google Gemini API key for reproduction agent reasoning",
     )
+    GEMINI_MODEL: str = Field(
+        default="gemini-3.6-flash",
+        description="Gemini model name for reproduction agent reasoning",
+    )
 
     # Backblaze B2 Storage (S3-compatible API)
     # Endpoint format: https://s3.<region>.backblazeb2.com
@@ -102,6 +106,17 @@ class WorkerSettings(BaseSettings):
         if url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql://", 1)
         return url
+
+    @property
+    def neon_sa_url(self) -> str:
+        """SQLAlchemy URL using psycopg3 dialect (postgresql+psycopg://)."""
+        url = self.NEON_DATABASE_URL
+        if url.startswith("postgres://"):
+            return url.replace("postgres://", "postgresql+psycopg://", 1)
+        if url.startswith("postgresql://"):
+            return url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return url
+
 
 
 @lru_cache

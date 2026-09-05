@@ -78,28 +78,34 @@ async def _write_to_neon(
     inside the worker package.
     """
     import sqlalchemy as sa
+    from app.db import _safe_uuid
 
-    dsn = settings.neon_pg_dsn
+    dsn = settings.neon_sa_url
     engine = sa.create_engine(dsn, pool_pre_ping=True)
+
+    run_uuid = _safe_uuid(state.run_id)
+    bug_report_uuid = _safe_uuid(state.bug_report_id)
 
     with engine.begin() as conn:
         conn.execute(
             sa.text(
                 """
                 INSERT INTO reproduction_runs (
+                    id,
                     bug_report_id,
                     status,
                     candidate_produced,
                     plausible_reproduced,
                     completed_at
                 ) VALUES (
+                    :id,
                     :bug_report_id,
                     :status,
                     :candidate_produced,
                     :plausible_reproduced,
                     :completed_at
                 )
-                ON CONFLICT (bug_report_id) DO UPDATE SET
+                ON CONFLICT (id) DO UPDATE SET
                     status               = EXCLUDED.status,
                     candidate_produced   = EXCLUDED.candidate_produced,
                     plausible_reproduced = EXCLUDED.plausible_reproduced,
@@ -107,7 +113,8 @@ async def _write_to_neon(
                 """
             ),
             {
-                "bug_report_id": state.bug_report_id,
+                "id": run_uuid,
+                "bug_report_id": bug_report_uuid,
                 "status": "succeeded" if state.reproduced else "failed",
                 "candidate_produced": bool(state.current_script),
                 "plausible_reproduced": state.reproduced,
@@ -115,7 +122,7 @@ async def _write_to_neon(
             },
         )
 
-    logger.info("Persisted run to Neon for bug_report_id=%s", state.bug_report_id)
+    logger.info("Persisted run to Neon for bug_report_id=%s run_id=%s", state.bug_report_id, state.run_id)
 
 
 def _stub_b2_upload(state: BugReportState) -> None:

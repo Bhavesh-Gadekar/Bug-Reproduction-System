@@ -32,7 +32,14 @@ async def ingest_node(state: BugReportState) -> dict[str, Any]:
             "started_at": datetime.now(tz=timezone.utc),
         }
 
+    import uuid
+    from app.db import ensure_reproduction_run
+
+    run_id = state.run_id or str(uuid.uuid4())
+    ensure_reproduction_run(run_id=run_id, bug_report_id=state.bug_report_id)
+
     return {
+        "run_id": run_id,
         "started_at": datetime.now(tz=timezone.utc),
         "raw_stack_trace": state.raw_stack_trace.strip(),
         # Ensure max_hypotheses respects the ceiling from settings (callers

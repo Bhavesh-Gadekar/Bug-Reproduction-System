@@ -19,3 +19,10 @@ dependencies = [
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks test as integration test requiring external services",
+]
+asyncio_mode = "auto"
+

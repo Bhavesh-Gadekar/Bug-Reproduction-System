@@ -29,7 +29,17 @@ class ReproductionWorker:
 
     async def initialize_graph(self, checkpointer: Any = None):
         """Build the LangGraph state machine with the provided checkpointer."""
+        if self.settings.GEMINI_API_KEY:
+            from app.graph.llm import GeminiLLMClient
+            llm = GeminiLLMClient()
+            logger.info("Initialized GeminiLLMClient with model=%s", llm.model)
+        else:
+            from app.graph.llm import FakeLLMClient
+            llm = FakeLLMClient()
+            logger.warning("GEMINI_API_KEY not configured. Falling back to FakeLLMClient.")
+
         self.graph = make_graph(
+            llm=llm,
             sandbox=self.sandbox_client,
             checkpointer=checkpointer,
         )

@@ -64,6 +64,7 @@ class BugReportState(BaseModel):
     # ------------------------------------------------------------------
     bug_report_id: str
     workspace_id: str
+    run_id: str = ""
 
     # ------------------------------------------------------------------
     # Input payload
