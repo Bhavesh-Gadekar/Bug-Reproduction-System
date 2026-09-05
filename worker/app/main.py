@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import logging
 import signal
 
@@ -54,11 +55,8 @@ async def main():
         worker.is_running = False
 
     for sig in (signal.SIGINT, signal.SIGTERM):
-        try:
+        with contextlib.suppress(NotImplementedError):
             loop.add_signal_handler(sig, handle_signal)
-        except NotImplementedError:
-            # Signal handling on Windows event loop fallback
-            pass
 
     await worker.start()
 

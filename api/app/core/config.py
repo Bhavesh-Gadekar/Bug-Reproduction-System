@@ -1,13 +1,19 @@
 from functools import lru_cache
-from typing import List
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Resolve paths dynamically relative to this file
+# parents[0] = api/app/core, parents[1] = api/app
+# parents[2] = api, parents[3] = project root
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(PROJECT_ROOT / ".env", PACKAGE_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -18,7 +24,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     PORT: int = 8000
     HOST: str = "0.0.0.0"
-    CORS_ORIGINS: List[str] = Field(default=["http://localhost:3000"])
+    CORS_ORIGINS: list[str] = Field(default=["http://localhost:3000"])
 
     # Neon PostgreSQL Database
     NEON_DATABASE_URL: str = Field(

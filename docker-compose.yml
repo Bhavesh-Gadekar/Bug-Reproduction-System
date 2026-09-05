@@ -1,6 +1,27 @@
 version: '3.8'
 
 services:
+  # Local Postgres for testing and offline local development
+  postgres:
+    image: postgres:16-alpine
+    container_name: bug_reproduction_postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-bug_reproduction_test}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bug_reproduction_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - bug_repro_network
+
   # Local Redis for message brokering and agent task queues
   redis:
     image: redis:7-alpine
@@ -92,6 +113,8 @@ services:
       - bug_repro_network
 
 volumes:
+  postgres_data:
+    driver: local
   redis_data:
     driver: local
 

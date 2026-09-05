@@ -1,12 +1,19 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Resolve paths dynamically relative to this file
+# parents[0] = worker/app/core, parents[1] = worker/app
+# parents[2] = worker, parents[3] = project root
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+
 
 class WorkerSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(PROJECT_ROOT / ".env", PACKAGE_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
