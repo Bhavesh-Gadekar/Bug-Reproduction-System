@@ -41,6 +41,18 @@ class Settings(BaseSettings):
         default="",
         description="Clerk Publishable Key",
     )
+    CLERK_WEBHOOK_SECRET: str = Field(
+        default="",
+        description="Clerk webhook signing secret (Svix) for /webhooks/clerk",
+    )
+    CLERK_JWKS_URL: str = Field(
+        default="",
+        description="Optional explicit Clerk JWKS URL for JWT signature verification",
+    )
+    CLERK_ISSUER: str = Field(
+        default="",
+        description="Optional explicit Clerk JWT issuer (iss) URL",
+    )
 
     # Google Gemini LLM API
     GEMINI_API_KEY: str = Field(
