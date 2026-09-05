@@ -78,6 +78,31 @@ class WorkerSettings(BaseSettings):
         description="Maximum concurrent reproduction tasks",
     )
 
+    # Sandbox execution service
+    SANDBOX_URL: str = Field(
+        default="http://sandbox:8001",
+        description="Base URL of the sandbox runner service",
+    )
+
+    # LangGraph graph parameters
+    MAX_HYPOTHESES: int = Field(
+        default=5,
+        description="Maximum hypothesis retries before giving up on a bug report",
+    )
+    SANDBOX_TIMEOUT_SECONDS: int = Field(
+        default=60,
+        description="Per-run timeout forwarded to the sandbox service",
+    )
+
+    @property
+    def neon_pg_dsn(self) -> str:
+        """psycopg3-compatible DSN derived from NEON_DATABASE_URL."""
+        url = self.NEON_DATABASE_URL
+        # psycopg3 accepts the standard postgresql:// scheme directly
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+        return url
+
 
 @lru_cache
 def get_worker_settings() -> WorkerSettings:
