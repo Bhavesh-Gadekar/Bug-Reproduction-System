@@ -205,8 +205,8 @@ async def test_real_e2e_reproduction_tqdm_bug():
             assert head["ContentLength"] > 0
 
     finally:
-        # Cleanup B2 artifacts
-        if settings.B2_KEY_ID and settings.B2_APPLICATION_KEY and uploaded_b2_keys:
+        # 1. Cleanup B2 artifacts (querying both tracked keys and S3 prefix for this bug_report)
+        if settings.B2_KEY_ID and settings.B2_APPLICATION_KEY:
             try:
                 import boto3
                 from botocore.config import Config
@@ -218,12 +218,25 @@ async def test_real_e2e_reproduction_tqdm_bug():
                     aws_secret_access_key=settings.B2_APPLICATION_KEY,
                     config=Config(signature_version="s3v4"),
                 )
+                # Delete tracked keys
                 for key in uploaded_b2_keys:
-                    s3.delete_object(Bucket=settings.B2_BUCKET_NAME, Key=key)
-            except Exception:
-                pass
+                    try:
+                        s3.delete_object(Bucket=settings.B2_BUCKET_NAME, Key=key)
+                    except Exception as exc:  # noqa: BLE001
+                        print(f"Failed to delete B2 key {key}: {exc}")
 
-        # Cleanup database rows across foreign key chain
+                # Delete any remaining objects with prefix artifacts/{bug_report_id}/
+                prefix = f"artifacts/{bug_report_id}/"
+                res = s3.list_objects_v2(Bucket=settings.B2_BUCKET_NAME, Prefix=prefix)
+                for obj in res.get("Contents", []):
+                    try:
+                        s3.delete_object(Bucket=settings.B2_BUCKET_NAME, Key=obj["Key"])
+                    except Exception as exc:  # noqa: BLE001
+                        print(f"Failed to delete B2 prefix key {obj['Key']}: {exc}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"B2 cleanup encountered an error: {exc}")
+
+        # 2. Cleanup database rows across foreign key chain
         if engine is not None:
             try:
                 with engine.begin() as conn:
@@ -233,10 +246,10 @@ async def test_real_e2e_reproduction_tqdm_bug():
                     conn.execute(sa.text("DELETE FROM bug_reports WHERE id = :id"), {"id": bug_report_id})
                     conn.execute(sa.text("DELETE FROM repos WHERE id = :id"), {"id": repo_id})
                     conn.execute(sa.text("DELETE FROM workspaces WHERE id = :id"), {"id": workspace_id})
-            except Exception:
-                pass
+            except Exception as exc:  # noqa: BLE001
+                print(f"Database cleanup encountered an error: {exc}")
 
-        # Cleanup local cloned repo directory if on disk
+        # 3. Cleanup local cloned repo directory if on disk
         local_repo_dir = Path("/repos") / str(bug_report_id)
         if local_repo_dir.exists():
             shutil.rmtree(local_repo_dir, ignore_errors=True)
