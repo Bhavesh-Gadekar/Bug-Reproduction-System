@@ -55,11 +55,12 @@ def make_sandbox_exec_node(sandbox: "SandboxClient", timeout_seconds: int = _DEF
             mounts = [f"{settings.REPOS_VOLUME_NAME}:/repos:ro"]
             repo_path = f"/repos/{state.bug_report_id}"
             workdir = repo_path
-            env = {"PYTHONPATH": repo_path}
+            env = {"PYTHONPATH": f"{repo_path}/.deps:{repo_path}/src:{repo_path}"}
         elif state.repo.local_path:
-            mounts = [f"{state.repo.local_path}:/workspace:ro"]
+            clean_local_path = Path(state.repo.local_path).resolve().as_posix()
+            mounts = [f"{clean_local_path}:/workspace:ro"]
             workdir = "/workspace"
-            env = {"PYTHONPATH": "/workspace"}
+            env = {"PYTHONPATH": "/workspace/.deps:/workspace/src:/workspace"}
 
         try:
             result = await sandbox.run(
@@ -85,6 +86,23 @@ def make_sandbox_exec_node(sandbox: "SandboxClient", timeout_seconds: int = _DEF
             )
             return {"last_execution_record": record}
 
+        # Check if exit was due to Docker infrastructure/daemon failure
+        infra_failure_patterns = [
+            "failed to connect to the docker api",
+            "dockerdesktoplinuxengine",
+            "is the docker daemon running",
+            "cannot connect to the docker daemon",
+            "error during connect",
+            "docker cli not found",
+            "docker: error during connect",
+            "error response from daemon",
+            "not a valid windows path",
+        ]
+        stderr_lower = (result.stderr or "").lower()
+        is_infra_error = result.exit_code == 125 or any(p in stderr_lower for p in infra_failure_patterns)
+
+        initial_verdict = "infra_error" if is_infra_error else "error"
+
         record = ExecutionRecord(
             hypothesis_index=state.hypothesis_index,
             hypothesis=state.current_hypothesis,
@@ -94,16 +112,45 @@ def make_sandbox_exec_node(sandbox: "SandboxClient", timeout_seconds: int = _DEF
             stderr=result.stderr,
             duration_seconds=result.duration_seconds,
             timed_out=result.timed_out,
-            verdict="error",
+            verdict=initial_verdict,
+            container_id=result.container_id,
         )
 
         logger.info(
-            "Sandbox returned exit_code=%d, timed_out=%s for attempt %d",
+            "Sandbox returned container_id=%s, exit_code=%d, timed_out=%s, infra_error=%s for attempt %d",
+            result.container_id,
             result.exit_code,
             result.timed_out,
+            is_infra_error,
             state.hypothesis_index,
         )
 
-        return {"last_execution_record": record}
+        from app.db import log_run_step
+        run_id = state.run_id or state.bug_report_id
+        log_run_step(
+            run_id=run_id,
+            node_name="sandbox_exec",
+            input_data={"attempt": state.hypothesis_index, "base_image": base_image},
+            output_data={
+                "exit_code": result.exit_code,
+                "stdout": result.stdout[:2000] if result.stdout else "",
+                "stderr": result.stderr[:2000] if result.stderr else "",
+                "duration_seconds": result.duration_seconds,
+                "timed_out": result.timed_out,
+                "container_id": result.container_id,
+                "is_infra_error": is_infra_error,
+            },
+            latency_ms=int(result.duration_seconds * 1000),
+        )
+
+        update_dict: dict[str, Any] = {
+            "last_execution_record": record,
+            "sandbox_container_id": result.container_id,
+        }
+        if is_infra_error:
+            update_dict["final_verdict"] = "infra_error"
+            update_dict["error"] = f"Infrastructure error: {result.stderr.strip()}"
+
+        return update_dict
 
     return sandbox_exec_node

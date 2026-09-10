@@ -1,0 +1,8 @@
+{
+  "repo_url": "https://github.com/tqdm/tqdm.git",
+  "commit_sha": "02cbd9c2f527ab1dce28dd3f155650f233c28519",
+  "source_url": "https://github.com/tqdm/tqdm/issues/261",
+  "bug_description": "AttributeError: 'tqdm' object has no attribute 'last_print_t' when tqdm.write() or close() is called during execution or teardown before last_print_t is set.",
+  "expected_failure_signature": "Traceback (most recent call last):\n  File \"main.py\", line 206, in <module>\n    OrgbaseQ(**settings).start()\n  File \"/Users/casraf/Dev/whitespace-tools/item_q/item_q/item_q.py\", line 26, in start\n  File \"main.py\", line 125, in flush\n    tqdm.write('Found %d matching people by names' % pg_count)\n  File \"/usr/local/lib/python2.7/site-packages/tqdm/_tqdm.py\", line 343, in write\n    inst.refresh()\n  File \"/usr/local/lib/python2.7/site-packages/tqdm/_tqdm.py\", line 944, in refresh\n    self.fp.write(self.__repr__())\n  File \"/usr/local/lib/python2.7/site-packages/tqdm/_tqdm.py\", line 649, in __repr__\n    time() - self.last_print_t,\nAttributeError: 'tqdm' object has no attribute 'last_print_t'",
+  "ground_truth_reproducible": true
+}

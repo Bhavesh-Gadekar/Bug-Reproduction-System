@@ -1,0 +1,128 @@
+=== ITEM 1A: evaluation_results for round-2 run_ids ===
+{"eval_id": "d6e10907-fe1a-4b11-9fb5-15796d322cf9", "run_id": "76582c34-3289-4024-9cdb-3a4dffbb1241", "verdict": "false_negative", "reviewer": "automated_benchmark"}
+{"eval_id": "cbb6778a-0072-4130-9e9d-14995a65806b", "run_id": "47795646-7d7e-40f2-b628-9b7a8e695d02", "verdict": "false_negative", "reviewer": "automated_benchmark"}
+{"eval_id": "3cc0e09d-910c-422c-a262-c95352bb379f", "run_id": "c9edc992-8c97-45d7-96e2-ebe730fc0aa1", "verdict": "false_negative", "reviewer": "automated_benchmark"}
+
+=== ITEM 1B: reproduction_runs for round-2 run_ids ===
+{"id": "76582c34-3289-4024-9cdb-3a4dffbb1241", "status": "error", "started_at": "None", "completed_at": "2026-09-09 07:28:01.343591+00:00", "sandbox_container_id": null, "candidate_produced": false, "plausible_reproduced": false}
+{"id": "47795646-7d7e-40f2-b628-9b7a8e695d02", "status": "error", "started_at": "None", "completed_at": "2026-09-09 07:31:26.680256+00:00", "sandbox_container_id": null, "candidate_produced": false, "plausible_reproduced": false}
+{"id": "c9edc992-8c97-45d7-96e2-ebe730fc0aa1", "status": "error", "started_at": "None", "completed_at": "2026-09-09 07:34:56.884769+00:00", "sandbox_container_id": null, "candidate_produced": false, "plausible_reproduced": false}
+
+=== ITEM 1C: run_steps for round-2 run_ids ===
+--- run_id=c9edc992-8c97-45d7-96e2-ebe730fc0aa1 step count=25 ---
+{"node_name": "system_init", "created_at": "2026-09-09 07:31:41.069970+00:00"}
+{"node_name": "ingest", "created_at": "2026-09-09 07:31:57.046994+00:00"}
+{"node_name": "repo_analysis", "created_at": "2026-09-09 07:32:10.041821+00:00"}
+{"node_name": "env_setup", "created_at": "2026-09-09 07:32:15.041930+00:00"}
+{"node_name": "dependency_install", "created_at": "2026-09-09 07:32:23.760217+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:32:30.149454+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:32:34.804881+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:32:40.934485+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:32:45.492733+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:32:54.277131+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:32:58.898474+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:33:05.305064+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:33:10.240732+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:33:18.109572+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:33:22.864566+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:33:29.598196+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:33:34.082533+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:33:40.550644+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:33:45.087124+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:33:53.608517+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:33:58.642305+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:34:06.689578+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:34:12.261544+00:00"}
+{"node_name": "minimization", "created_at": "2026-09-09 07:34:17.116751+00:00"}
+{"node_name": "persist", "created_at": "2026-09-09 07:35:02.242946+00:00"}
+--- run_id=47795646-7d7e-40f2-b628-9b7a8e695d02 step count=24 ---
+{"node_name": "system_init", "created_at": "2026-09-09 07:28:25.054631+00:00"}
+{"node_name": "ingest", "created_at": "2026-09-09 07:28:39.549049+00:00"}
+{"node_name": "repo_analysis", "created_at": "2026-09-09 07:28:50.032959+00:00"}
+{"node_name": "env_setup", "created_at": "2026-09-09 07:28:54.936183+00:00"}
+{"node_name": "dependency_install", "created_at": "2026-09-09 07:29:04.317227+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:29:11.372058+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:29:16.014113+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:29:22.163968+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:29:26.855174+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:29:34.500544+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:29:39.256091+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:29:47.415304+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:29:52.092569+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:29:59.272664+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:30:04.088961+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:30:11.564130+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:30:16.031449+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:30:25.238631+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:30:29.912309+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:30:37.744493+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:30:42.659444+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:30:49.823798+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:30:54.964784+00:00"}
+{"node_name": "persist", "created_at": "2026-09-09 07:31:31.432828+00:00"}
+--- run_id=76582c34-3289-4024-9cdb-3a4dffbb1241 step count=13 ---
+{"node_name": "system_init", "created_at": "2026-09-09 07:25:58.982441+00:00"}
+{"node_name": "ingest", "created_at": "2026-09-09 07:26:17.532293+00:00"}
+{"node_name": "repo_analysis", "created_at": "2026-09-09 07:26:31.852909+00:00"}
+{"node_name": "env_setup", "created_at": "2026-09-09 07:26:36.125245+00:00"}
+{"node_name": "dependency_install", "created_at": "2026-09-09 07:26:49.395390+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:26:56.513500+00:00"}
+{"node_name": "hypothesis_gen", "created_at": "2026-09-09 07:27:01.088642+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:27:08.151987+00:00"}
+{"node_name": "script_gen", "created_at": "2026-09-09 07:27:12.696036+00:00"}
+{"node_name": "sandbox_exec", "created_at": "2026-09-09 07:27:22.031460+00:00"}
+{"node_name": "verdict", "created_at": "2026-09-09 07:27:26.617591+00:00"}
+{"node_name": "minimization", "created_at": "2026-09-09 07:27:31.202922+00:00"}
+{"node_name": "persist", "created_at": "2026-09-09 07:28:06.354426+00:00"}
+
+=== ITEM 2: started_at null counts ===
+Non-null started_at: 8
+Null started_at: 23
+Sample reproduction_runs (recent):
+{"id": "9c6c7ce2-3d77-425d-a584-f570208d6d2f", "status": "succeeded", "started_at": "None", "completed_at": "2026-09-09 08:19:27.734521+00:00"}
+{"id": "90380af6-ad6b-4621-a970-aa9d9530af02", "status": "failed", "started_at": "None", "completed_at": "2026-09-09 08:17:38.608658+00:00"}
+{"id": "76210363-4d01-43ae-beca-272f841afd9e", "status": "succeeded", "started_at": "None", "completed_at": "2026-09-09 08:14:24.225810+00:00"}
+{"id": "e0ae43af-7c47-4e4d-992a-b6191b052800", "status": "succeeded", "started_at": "None", "completed_at": "2026-09-09 07:42:44.739304+00:00"}
+{"id": "080b62f9-1464-4c08-99c6-b0220393ef3b", "status": "failed", "started_at": "None", "completed_at": "2026-09-09 07:40:50.649070+00:00"}
+{"id": "420cf59c-0b99-443d-81cd-6a2972a192a3", "status": "succeeded", "started_at": "None", "completed_at": "2026-09-09 07:37:32.595257+00:00"}
+{"id": "c9edc992-8c97-45d7-96e2-ebe730fc0aa1", "status": "error", "started_at": "None", "completed_at": "2026-09-09 07:34:56.884769+00:00"}
+{"id": "47795646-7d7e-40f2-b628-9b7a8e695d02", "status": "error", "started_at": "None", "completed_at": "2026-09-09 07:31:26.680256+00:00"}
+
+=== ITEM 3: dependency version strings from dependency_install steps ===
+run_id=76582c34: Building wheels for collected packages: python-dateutil
+run_id=76582c34: Building wheel for python-dateutil (pyproject.toml): started
+run_id=76582c34: Building wheel for python-dateutil (pyproject.toml): finished with status 'done'
+run_id=76582c34: Successfully installed python-dateutil-2.8.1 six-1.17.0
+run_id=47795646: Building wheels for collected packages: Jinja2
+run_id=47795646: Building wheel for Jinja2 (setup.py): started
+run_id=47795646: Building wheel for Jinja2 (setup.py): finished with status 'done'
+run_id=47795646: Successfully installed Jinja2-3.0.0a1 MarkupSafe-3.0.3
+run_id=c9edc992: Building wheels for collected packages: tqdm
+run_id=c9edc992: Building wheel for tqdm (setup.py): started
+run_id=c9edc992: Building wheel for tqdm (setup.py): finished with status 'done'
+run_id=c9edc992: Successfully installed tqdm-4.8.4
+run_id=420cf59c: Building wheels for collected packages: python-dateutil
+run_id=420cf59c: Building wheel for python-dateutil (pyproject.toml): started
+run_id=420cf59c: Building wheel for python-dateutil (pyproject.toml): finished with status 'done'
+run_id=420cf59c: Successfully installed python-dateutil-2.8.1 six-1.17.0
+run_id=080b62f9: Building wheels for collected packages: Jinja2
+run_id=080b62f9: Building wheel for Jinja2 (setup.py): started
+run_id=080b62f9: Building wheel for Jinja2 (setup.py): finished with status 'done'
+run_id=080b62f9: Successfully installed Jinja2-3.0.0a1 MarkupSafe-3.0.3
+run_id=e0ae43af: Building wheels for collected packages: tqdm
+run_id=e0ae43af: Building wheel for tqdm (setup.py): started
+run_id=e0ae43af: Building wheel for tqdm (setup.py): finished with status 'done'
+run_id=e0ae43af: Successfully installed tqdm-4.8.4
+run_id=76210363: Building wheels for collected packages: python-dateutil
+run_id=76210363: Building wheel for python-dateutil (pyproject.toml): started
+run_id=76210363: Building wheel for python-dateutil (pyproject.toml): finished with status 'done'
+run_id=76210363: Successfully installed python-dateutil-2.8.1 six-1.17.0
+run_id=90380af6: Building wheels for collected packages: Jinja2
+run_id=90380af6: Building wheel for Jinja2 (setup.py): started
+run_id=90380af6: Building wheel for Jinja2 (setup.py): finished with status 'done'
+run_id=90380af6: Successfully installed Jinja2-3.0.0a1 MarkupSafe-3.0.3
+run_id=9c6c7ce2: Building wheels for collected packages: tqdm
+run_id=9c6c7ce2: Building wheel for tqdm (setup.py): started
+run_id=9c6c7ce2: Building wheel for tqdm (setup.py): finished with status 'done'
+run_id=9c6c7ce2: Successfully installed tqdm-4.8.4
+Done.

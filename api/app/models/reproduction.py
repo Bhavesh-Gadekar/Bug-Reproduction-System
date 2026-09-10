@@ -56,6 +56,7 @@ class ReproductionRun(Base):
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     sandbox_container_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    persist_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     bug_report: Mapped["BugReport"] = relationship(
@@ -141,6 +142,15 @@ class Artifact(Base, TimestampMixin):
         nullable=False,
         comment="Backblaze B2 object key / path",
     )
+    status: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="uploaded",
+    )
+    error: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
 
     # Relationships
     run: Mapped["ReproductionRun"] = relationship(
@@ -180,4 +190,39 @@ class EvaluationResult(Base):
     run: Mapped["ReproductionRun"] = relationship(
         "ReproductionRun",
         back_populates="evaluation_results",
+    )
+
+
+class WorkerIncident(Base, TimestampMixin):
+    __tablename__ = "worker_incidents"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        GUID(),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    detected_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    exception_type: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    exception_message: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+    traceback: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+    in_flight_run_ids: Mapped[list[str]] = mapped_column(
+        JSON().with_variant(JSONB, "postgresql"),
+        nullable=False,
+        default=list,
     )

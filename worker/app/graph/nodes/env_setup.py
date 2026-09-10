@@ -32,6 +32,9 @@ async def env_setup_node(state: BugReportState) -> dict[str, Any]:
     and build system.  Falls back to a Python slim image if the combination
     is unknown.
     """
+    import time
+    start_time = time.monotonic()
+
     lang = (state.repo.language or "python").lower()
     bs = (state.repo.build_system or "pip").lower()
 
@@ -40,8 +43,22 @@ async def env_setup_node(state: BugReportState) -> dict[str, Any]:
         (_FALLBACK_IMAGE, _FALLBACK_INSTALL),
     )
 
+    base = state.base_image or base_image
+    install = state.install_command or install_command
+
+    from app.db import log_run_step
+    run_id = state.run_id or state.bug_report_id
+    latency_ms = max(int((time.monotonic() - start_time) * 1000), 1)
+    log_run_step(
+        run_id=run_id,
+        node_name="env_setup",
+        input_data={"language": lang, "build_system": bs},
+        output_data={"base_image": base, "install_command": install},
+        latency_ms=latency_ms,
+    )
+
     # Respect caller-supplied values (set by tests or future deep-analysis)
     return {
-        "base_image": state.base_image or base_image,
-        "install_command": state.install_command or install_command,
+        "base_image": base,
+        "install_command": install,
     }

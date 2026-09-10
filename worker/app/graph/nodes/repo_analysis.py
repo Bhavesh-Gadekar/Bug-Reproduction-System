@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -113,6 +114,23 @@ def _get_repo_base_dir() -> Path:
     return fallback
 
 
+def _resolve_head_sha(repo_path: Path) -> str | None:
+    """Return the actual checked-out commit SHA via git rev-parse HEAD."""
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(repo_path),
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if res.returncode == 0:
+            return res.stdout.strip()
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
 def _clone_and_checkout_repo(
     git_url: str,
     target_dir: Path,
@@ -171,13 +189,16 @@ async def repo_analysis_node(state: BugReportState) -> dict[str, Any]:
     Clones the repository at base_commit_sha / branch, inspects project files,
     and populates ``repo.language``, ``repo.framework``, and ``repo.build_system``.
     """
+    import time
+    start_time = time.monotonic()
     repo = state.repo
     base_dir = _get_repo_base_dir()
     slug = state.bug_report_id or "default_repo"
     target_dir = base_dir / slug
 
     # Attempt real git clone and checkout
-    cloned_ok = _clone_and_checkout_repo(
+    cloned_ok = await asyncio.to_thread(
+        _clone_and_checkout_repo,
         git_url=repo.git_url,
         target_dir=target_dir,
         commit_sha=repo.base_commit_sha,
@@ -188,8 +209,15 @@ async def repo_analysis_node(state: BugReportState) -> dict[str, Any]:
     detected_fw = None
     detected_bs = None
 
+    actual_commit_sha: str | None = None
     if cloned_ok:
         detected_lang, detected_fw, detected_bs = _detect_from_filesystem(target_dir)
+        actual_commit_sha = await asyncio.to_thread(_resolve_head_sha, target_dir)
+        logger.info(
+            "Repo cloned and checked out. actual_commit_sha=%s path=%s",
+            actual_commit_sha,
+            target_dir,
+        )
 
     if not (detected_lang and detected_fw and detected_bs):
         url_lang, url_fw, url_bs = _detect_from_url(repo.git_url)
@@ -223,6 +251,27 @@ async def repo_analysis_node(state: BugReportState) -> dict[str, Any]:
         language=language,
         framework=framework,
         build_system=build_system,
+    )
+
+    from app.db import log_run_step
+    run_id = state.run_id or state.bug_report_id
+    log_run_step(
+        run_id=run_id,
+        node_name="repo_analysis",
+        input_data={
+            "git_url": repo.git_url,
+            "branch": repo.branch,
+            "requested_commit_sha": repo.base_commit_sha,
+        },
+        output_data={
+            "language": language,
+            "framework": framework,
+            "build_system": build_system,
+            "cloned": cloned_ok,
+            "actual_commit_sha": actual_commit_sha,
+            "local_path": str(target_dir) if cloned_ok else None,
+        },
+        latency_ms=max(int((time.monotonic() - start_time) * 1000), 1),
     )
 
     return {"repo": updated_repo}

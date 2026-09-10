@@ -246,6 +246,31 @@ def test_fork_bomb_killed_by_pid_limit(settings: Settings):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# Test 2b — Timeout enforcement
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.integration
+def test_timeout_enforcement(settings: Settings):
+    """
+    A process that runs longer than timeout_seconds must be terminated by the runner,
+    returning timed_out=True within a reasonable bound.
+    """
+    request = JobRequest(
+        base_image=BASE_IMAGE,
+        command=["python3", "-c", "import time; time.sleep(30)"],
+        timeout_seconds=2,
+    )
+    start = time.monotonic()
+    result = run_job(request, settings)
+    elapsed = time.monotonic() - start
+
+    assert result.timed_out is True, "Expected job to be marked timed_out"
+    assert elapsed < 10, f"Expected timeout enforcement within 10s, took {elapsed:.1f}s"
+
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # Test 3 — Network isolation (--network=none)
 # ──────────────────────────────────────────────────────────────────────────────
 

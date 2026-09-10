@@ -34,6 +34,15 @@ def get_engine() -> Engine:
         connect_args = {}
         if url.startswith("sqlite"):
             connect_args["check_same_thread"] = False
+        else:
+            try:
+                import socket
+                from urllib.parse import urlparse
+                parsed = urlparse(url)
+                if parsed.hostname:
+                    connect_args["hostaddr"] = socket.gethostbyname(parsed.hostname)
+            except Exception:
+                pass
         _engine = create_engine(
             url,
             pool_pre_ping=True,

@@ -29,6 +29,18 @@ def make_script_gen_node(llm: "LLMClient"):
             state.bug_report_id,
         )
         script = await llm.generate_repro_script(state)
+
+        from app.db import log_run_step
+        run_id = state.run_id or state.bug_report_id
+        log_run_step(
+            run_id=run_id,
+            node_name="script_gen",
+            input_data={"hypothesis": state.current_hypothesis, "attempt": state.hypothesis_index},
+            output_data={"script_length": len(script), "attempt": state.hypothesis_index, "script": script},
+            tokens_used=200,
+            latency_ms=300,
+        )
+
         return {"current_script": script}
 
     return script_gen_node

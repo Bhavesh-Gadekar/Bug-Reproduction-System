@@ -1,0 +1,8 @@
+{
+  "repo_url": "https://github.com/pallets/jinja.git",
+  "commit_sha": "6478c22f29bb85b2bae635602148d95df5e5c7ce",
+  "source_url": "https://github.com/pallets/jinja/issues/1198",
+  "bug_description": "TypeError: argument of type 'StrictUndefined' is not iterable when evaluating 'value in dict' with missing key under StrictUndefined environment.",
+  "expected_failure_signature": "Traceback (most recent call last):\n  File \"./mcve.py\", line 16, in <module>\n    main()\n  File \"./mcve.py\", line 12, in main\n    template.render(data={})\n  File \"/usr/local/lib/python3.6/dist-packages/jinja2/environment.py\", line 1090, in render\n    self.environment.handle_exception()\n  File \"/usr/local/lib/python3.6/dist-packages/jinja2/environment.py\", line 832, in handle_exception\n    reraise(*rewrite_traceback_stack(source=source))\n  File \"/usr/local/lib/python3.6/dist-packages/jinja2/_compat.py\", line 28, in reraise\n    raise value.with_traceback(tb)\n  File \"<template>\", line 1, in top-level template code\nTypeError: argument of type 'StrictUndefined' is not iterable",
+  "ground_truth_reproducible": true
+}

@@ -26,6 +26,10 @@ class WorkerSettings(BaseSettings):
         default="",
         description="Neon serverless PostgreSQL database connection URL",
     )
+    ALLOW_DEGRADED_CHECKPOINTER: bool = Field(
+        default=False,
+        description="If True, allow falling back to in-memory checkpointer when Neon is unreachable",
+    )
 
     # Clerk Authentication
     CLERK_SECRET_KEY: str = Field(
@@ -68,7 +72,7 @@ class WorkerSettings(BaseSettings):
 
     # Redis Connection
     REDIS_URL: str = Field(
-        default="redis://localhost:6379/0",
+        default="redis://127.0.0.1:6379/0",
         description="Redis connection URL for queue and message brokering",
     )
 

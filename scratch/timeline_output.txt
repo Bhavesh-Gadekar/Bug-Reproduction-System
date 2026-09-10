@@ -1,0 +1,43 @@
+Total events found: 42
+[2026-09-10 06:19:40,847] WORKER: [INFO] arq.worker:   0.33s ? repro-3291ad5e-e5f9-43be-ae61-baebd9cb7087:run_reproduction_task({'
+[2026-09-10 06:19:40,926] WORKER: [INFO] worker: InFlightTracker: started tracking run_id=3291ad5e-e5f9-43be-ae61-baebd9cb7087 (cu
+[2026-09-10 06:19:47,030] DB STEP LOGGED: node=system_init inner_latency=0ms
+[2026-09-10 06:19:47,263] WORKER: [INFO] worker: Processing bug reproduction task for report 9a4f27f4-ba2e-4042-9309-4a10f56961c5 
+[2026-09-10 06:19:54,622] GRAPH: node_execution_start node=ingest duration=ms
+[2026-09-10 06:20:09,664] DB STEP LOGGED: node=ingest inner_latency=8070ms
+[2026-09-10 06:20:09,884] GRAPH: node_execution_complete node=ingest duration=11934.02ms
+[2026-09-10 06:20:09,907] GRAPH: node_execution_start node=repo_analysis duration=ms
+[2026-09-10 06:20:19,107] DB STEP LOGGED: node=repo_analysis inner_latency=4963ms
+[2026-09-10 06:20:19,317] GRAPH: node_execution_complete node=repo_analysis duration=9410.16ms
+[2026-09-10 06:20:19,329] GRAPH: node_execution_start node=env_setup duration=ms
+[2026-09-10 06:20:23,202] DB STEP LOGGED: node=env_setup inner_latency=2ms
+[2026-09-10 06:20:23,420] GRAPH: node_execution_complete node=env_setup duration=4091.09ms
+[2026-09-10 06:20:23,429] GRAPH: node_execution_start node=dependency_install duration=ms
+[2026-09-10 06:20:47,660] DB STEP LOGGED: node=dependency_install inner_latency=20281ms
+[2026-09-10 06:20:47,884] GRAPH: node_execution_complete node=dependency_install duration=21141.88ms
+[2026-09-10 06:20:47,905] GRAPH: node_execution_start node=hypothesis_gen duration=ms
+[2026-09-10 06:20:55,700] DB STEP LOGGED: node=hypothesis_gen inner_latency=3629ms
+[2026-09-10 06:20:59,781] DB STEP LOGGED: node=hypothesis_gen inner_latency=250ms
+[2026-09-10 06:20:59,996] GRAPH: node_execution_complete node=hypothesis_gen duration=12091.34ms
+[2026-09-10 06:21:00,002] GRAPH: node_execution_start node=script_gen duration=ms
+[2026-09-10 06:21:10,815] DB STEP LOGGED: node=script_gen inner_latency=2008ms
+[2026-09-10 06:21:18,417] DB STEP LOGGED: node=script_gen inner_latency=300ms
+[2026-09-10 06:21:18,715] GRAPH: node_execution_complete node=script_gen duration=15406.47ms
+[2026-09-10 06:21:18,730] GRAPH: node_execution_start node=sandbox_exec duration=ms
+[2026-09-10 06:21:34,106] DB STEP LOGGED: node=sandbox_exec inner_latency=8233ms
+[2026-09-10 06:21:34,410] GRAPH: node_execution_complete node=sandbox_exec duration=15680.08ms
+[2026-09-10 06:21:34,423] GRAPH: node_execution_start node=verdict duration=ms
+[2026-09-10 06:21:38,861] DB STEP LOGGED: node=verdict inner_latency=1ms
+[2026-09-10 06:21:39,087] GRAPH: node_execution_complete node=verdict duration=4664.21ms
+[2026-09-10 06:21:39,104] GRAPH: node_execution_start node=minimization duration=ms
+[2026-09-10 06:21:42,904] DB STEP LOGGED: node=minimization inner_latency=25ms
+[2026-09-10 06:21:43,109] GRAPH: node_execution_complete node=minimization duration=4004.89ms
+[2026-09-10 06:21:43,118] GRAPH: node_execution_start node=persist duration=ms
+[2026-09-10 06:21:54,952] DB/B2: [INFO] app.db: Recorded artifact type=repro_script path=artifacts/9a4f27f4-ba2e-4042-9309-4a10f5
+[2026-09-10 06:22:01,503] DB/B2: [INFO] app.db: Recorded artifact type=repro_script path=artifacts/9a4f27f4-ba2e-4042-9309-4a10f5
+[2026-09-10 06:22:07,910] DB/B2: [INFO] app.db: Recorded artifact type=log path=artifacts/9a4f27f4-ba2e-4042-9309-4a10f56961c5/at
+[2026-09-10 06:22:11,940] DB/B2: [INFO] app.graph.nodes.persist: Persisted run to Neon for bug_report_id=9a4f27f4-ba2e-4042-9309-
+[2026-09-10 06:22:15,622] DB STEP LOGGED: node=persist inner_latency=25423ms
+[2026-09-10 06:22:15,953] GRAPH: node_execution_complete node=persist duration=29437.14ms
+[2026-09-10 06:22:22,674] WORKER: [INFO] worker: InFlightTracker: ended tracking run_id=3291ad5e-e5f9-43be-ae61-baebd9cb7087 (rema
+[2026-09-10 06:22:22,687] WORKER: [INFO] arq.worker: 161.88s ? repro-3291ad5e-e5f9-43be-ae61-baebd9cb7087:run_reproduction_task ? 

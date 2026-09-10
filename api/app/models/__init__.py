@@ -11,6 +11,7 @@ from app.models.reproduction import (
     EvaluationResult,
     ReproductionRun,
     RunStep,
+    WorkerIncident,
 )
 from app.models.workspace import User, Workspace
 
@@ -23,6 +24,7 @@ __all__ = [
     "RunStep",
     "Artifact",
     "EvaluationResult",
+    "WorkerIncident",
     "BugReportStatus",
     "ReproductionRunStatus",
     "ArtifactType",

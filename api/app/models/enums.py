@@ -18,6 +18,8 @@ class ReproductionRunStatus(enum.StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     TIMED_OUT = "timed_out"
+    ERROR = "error"
+    INFRA_ERROR = "infra_error"
 
 
 class ArtifactType(enum.StrEnum):

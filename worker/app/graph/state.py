@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import operator
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -46,7 +46,8 @@ class ExecutionRecord(BaseModel):
     stderr: str
     duration_seconds: float
     timed_out: bool
-    verdict: Literal["matched", "no_match", "error"]
+    verdict: Literal["matched", "no_match", "error", "infra_error"]
+    container_id: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -106,6 +107,7 @@ class BugReportState(BaseModel):
     execution_history: Annotated[list[ExecutionRecord], operator.add] = Field(
         default_factory=list
     )
+    sandbox_container_id: str = ""
 
     # ------------------------------------------------------------------
     # Budget
@@ -122,3 +124,8 @@ class BugReportState(BaseModel):
     minimized_script: str = ""
     final_verdict: str = ""
     error: str = ""
+    persist_error: str | None = None
+    artifacts: list[dict[str, Any]] = Field(default_factory=list)
+    checkpointer_type: str = ""
+    checkpointer_degraded: bool = False
+

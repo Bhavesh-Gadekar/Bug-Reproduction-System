@@ -154,7 +154,8 @@ def run_job(request: JobRequest, settings: Settings) -> JobResult:
 
     # Mount volumes/directories (scoped read-only by default for safety)
     for mount in request.mounts:
-        mount_arg = mount if (":ro" in mount or ":rw" in mount) else f"{mount}:ro"
+        normalized_mount = mount.replace("\\", "/")
+        mount_arg = normalized_mount if (":ro" in normalized_mount or ":rw" in normalized_mount) else f"{normalized_mount}:ro"
         cmd += ["-v", mount_arg]
 
     # Set container working directory if specified

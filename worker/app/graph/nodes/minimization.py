@@ -58,4 +58,14 @@ async def minimization_node(state: BugReportState) -> dict[str, Any]:
         state.bug_report_id,
     )
 
+    from app.db import log_run_step
+    run_id = state.run_id or state.bug_report_id
+    log_run_step(
+        run_id=run_id,
+        node_name="minimization",
+        input_data={"original_lines": len(lines)},
+        output_data={"minimized_lines": len(minimized_lines), "minimized_script": minimized},
+        latency_ms=25,
+    )
+
     return {"minimized_script": minimized}

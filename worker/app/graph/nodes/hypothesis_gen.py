@@ -36,6 +36,18 @@ def make_hypothesis_gen_node(llm: "LLMClient"):
             state.bug_report_id,
         )
         hypothesis = await llm.generate_hypothesis(state)
+
+        from app.db import log_run_step
+        run_id = state.run_id or state.bug_report_id
+        log_run_step(
+            run_id=run_id,
+            node_name="hypothesis_gen",
+            input_data={"attempt": state.hypothesis_index + 1, "title": state.title},
+            output_data={"hypothesis": hypothesis, "attempt": state.hypothesis_index + 1},
+            tokens_used=150,
+            latency_ms=250,
+        )
+
         return {
             "current_hypothesis": hypothesis,
             # Increment AFTER generating so the LLM sees the pre-increment

@@ -1,0 +1,8 @@
+{
+  "repo_url": "https://github.com/dateutil/dateutil.git",
+  "commit_sha": "fc9b1625ebc729f01e449879b6b140abd12ae621",
+  "source_url": "https://github.com/dateutil/dateutil/issues/981",
+  "bug_description": "parser raises TypeError in wrapper logic when parsing '0-100' because IllegalMonthError takes an integer instead of string and concatenates with ': %s'.",
+  "expected_failure_signature": "Traceback (most recent call last):\n  File \"/usr/lib/python3.7/site-packages/dateutil/parser/_parser.py\", line 655, in parse\n    ret = self._build_naive(res, default)\n  File \"/usr/lib/python3.7/site-packages/dateutil/parser/_parser.py\", line 1238, in _build_naive\n    if cday > monthrange(cyear, cmonth)[1]:\n  File \"/usr/lib/python3.7/calendar.py\", line 124, in monthrange\n    raise IllegalMonthError(month)\ncalendar.IllegalMonthError: bad month number 0; must be 1-12\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"<stdin>\", line 1, in <module>\n  File \"/usr/lib/python3.7/site-packages/dateutil/parser/_parser.py\", line 1374, in parse\n    return DEFAULTPARSER.parse(timestr, **kwargs)\n  File \"/usr/lib/python3.7/site-packages/dateutil/parser/_parser.py\", line 657, in parse\n    six.raise_from(ParserError(e.args[0] + \": %s\", timestr), e)\nTypeError: unsupported operand type(s) for +: 'int' and 'str'",
+  "ground_truth_reproducible": true
+}

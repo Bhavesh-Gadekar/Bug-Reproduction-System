@@ -27,6 +27,7 @@ class SandboxResult(BaseModel):
     exit_code: int
     duration_seconds: float
     timed_out: bool
+    container_id: str = ""
 
 
 # ---------------------------------------------------------------------------

@@ -128,3 +128,61 @@ async def test_graph_retries_exhausted():
     assert final_state["execution_history"][0].verdict == "no_match"
     assert final_state["execution_history"][1].verdict == "no_match"
     assert final_state["final_verdict"] == "failed"
+
+
+@pytest.mark.asyncio
+async def test_verdict_chained_traceback_requires_primary_error():
+    """Verify that an intermediate error in a chained traceback does NOT cause a false match."""
+    from app.graph.state import BugReportState, ExecutionRecord, RepoMeta
+    from app.graph.nodes.verdict import verdict_node, extract_primary_error
+
+    chained_trace = (
+        "Traceback (most recent call last):\n"
+        '  File "dateutil/parser/_parser.py", line 1238, in _build_naive\n'
+        "    raise IllegalMonthError(month)\n"
+        "calendar.IllegalMonthError: bad month number 0; must be 1-12\n\n"
+        "During handling of the above exception, another exception occurred:\n\n"
+        "Traceback (most recent call last):\n"
+        '  File "dateutil/parser/_parser.py", line 657, in parse\n'
+        '    six.raise_from(ParserError(e.args[0] + ": %s", timestr), e)\n'
+        "TypeError: unsupported operand type(s) for +: 'int' and 'str'\n"
+    )
+
+    assert extract_primary_error(chained_trace) == "TypeError"
+
+    # Execution output has intermediate error (IllegalMonthError) and ParserError, but NOT TypeError
+    sandbox_output = (
+        "Traceback (most recent call last):\n"
+        "calendar.IllegalMonthError: bad month number 0; must be 1-12\n\n"
+        "The above exception was the direct cause of the following exception:\n"
+        "dateutil.parser._parser.ParserError: bad month number 0; must be 1-12: 0-100\n"
+    )
+
+    record = ExecutionRecord(
+        hypothesis_index=1,
+        hypothesis="Trigger TypeError with 0-100",
+        script="parse('0-100')",
+        stdout="",
+        stderr=sandbox_output,
+        exit_code=1,
+        duration_seconds=1.2,
+        timed_out=False,
+        verdict="no_match",
+    )
+
+    state = BugReportState(
+        bug_report_id="test-bug-chained",
+        workspace_id="ws-test",
+        title="Dateutil Issue 981: parser raises TypeError in wrapper logic",
+        description="Testing chained exception handling",
+        raw_stack_trace=chained_trace,
+        repo=RepoMeta(git_url="https://github.com/dateutil/dateutil"),
+        execution_history=[record],
+        last_execution_record=record,
+        max_hypotheses=1,
+    )
+
+    result = await verdict_node(state)
+    assert result["reproduced"] is False
+    assert result["final_verdict"] == ""
+    assert result["last_execution_record"].verdict == "no_match"
